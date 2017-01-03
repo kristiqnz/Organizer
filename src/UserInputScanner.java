@@ -8,48 +8,37 @@ public class UserInputScanner {
 		this.scan = new Scanner(System.in);
 	}
 	
-	public String inputType() { 
+	public String inputType() throws InvalidInputException { 
 	
 		boolean checked = false; 
 		String type = null;
 		while(!checked) {  		
 			
-			try { 
+
 				System.out.print("Event type (Meeting / Task): "); 
 				type = this.scan.nextLine();
 				
 				if(! (checked = DataValidator.checkType(type)) ) { 
 					throw new InvalidInputException(type);
 				}
-				
-			}
-			catch(InvalidInputException e) { 
-				e.getMessege();
-				continue;
-			}
 		}
+
 		
 		return type.toLowerCase(); 
 	}
 	
-	public String inputMarker() { 
+	public String inputMarker() throws InvalidInputException { 
 		
 		boolean checked = false; 
 		String marker = null; 
 		
 		while(!checked) {  		
-			
-			try { 
-				System.out.print("Marker (Public / Confidential / Personal): "); 
-				marker = this.scan.nextLine();
 				
-				if(! (checked = DataValidator.checkMarker(marker)) ) { 
-					throw new InvalidInputException(marker);
-				}					
-			}
-			catch(InvalidInputException e) { 
-				e.getMessege();
-				continue;
+			System.out.print("Marker (Public / Confidential / Personal): "); 
+			marker = this.scan.nextLine();
+				
+			if(! (checked = DataValidator.checkMarker(marker)) ) { 
+				throw new InvalidInputException(marker);
 			}
 		}
 		
@@ -57,52 +46,40 @@ public class UserInputScanner {
 
 	}
 	
-	public String inputDate() { 
+	public String inputDate() throws InvalidInputException { 
 
-		
 		boolean checked = false; 
 		String date = null; 
 		
 		while(!checked) {  		
 			
-			try { 
-				System.out.print("Date (DD.MM): "); 
-				date = this.scan.nextLine();
+			System.out.print("Date (DD.MM): "); 
+			date = this.scan.nextLine();
 				
-				if(! (checked = DataValidator.checkDate(date)) ) { 
-					throw new InvalidInputException(date);
-				}
+			if(! (checked = DataValidator.checkDate(date)) ) { 
+				throw new InvalidInputException(date);
+			}
 				
-			}
-			catch(InvalidInputException e) { 
-				e.getMessege();
-				continue;
-			}
 		}
 		
 		return date; 
 	}
 	
-	public String inputTime() { 
+	public String inputTime() throws InvalidInputException { 
 		
 		boolean checked = false;
 		String time = null; 
 		
 		while(!checked) {  		
 			
-			try { 
-				System.out.print("Time (HH:MM): "); 
-				time = this.scan.nextLine();
+			System.out.print("Time (HH:MM): "); 
+			time = this.scan.nextLine();
 				
-				if(! (checked = DataValidator.checkTime(time)) ) { 
-					throw new InvalidInputException(time);
-				}
+			if(! (checked = DataValidator.checkTime(time)) ) { 
+				throw new InvalidInputException(time);
+			}
 				
-			}
-			catch(InvalidInputException e) { 
-				e.getMessege();
-				continue; 
-			}
+
 		}
 		
 		return time; 
@@ -115,25 +92,18 @@ public class UserInputScanner {
 		
 		return description;		
 	}
-
-	public String inputMonth() { 
+	
+	public String inputMonth() throws InvalidInputException { 
 		boolean checked = false; 
 		String month = null; 
 		
 		while(!checked) {  		
 			
-			try { 
-				System.out.print("Month (MM): "); 
-				 month = this.scan.nextLine();
+			System.out.print("Month (MM): "); 
+			month = this.scan.nextLine();
 				
-				if(! (checked = DataValidator.checkMonth(month)) ) { 
-					throw new InvalidInputException(month);
-				}
-				
-			}
-			catch(InvalidInputException e) { 
-				e.getMessege();
-				continue;
+			if(! (checked = DataValidator.checkMonth(month)) ) { 
+				throw new InvalidInputException(month);
 			}
 		}
 		

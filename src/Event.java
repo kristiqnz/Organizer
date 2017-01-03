@@ -87,23 +87,32 @@ public class Event implements Serializable {
 	
 	public boolean writeInFile(File eventFile) throws IOException, JSONException { 
 		
+		BufferedWriter writer = null;
+		
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(eventFile, true)); //APENDS TO FILE
+			writer = new BufferedWriter(new FileWriter(eventFile, true)); //APENDS TO FILE
 			
 			String JSONString = this.toJSONString();
 			
 			writer.write(JSONString);
 			writer.newLine();
-			writer.close();
 			
 		}
 		catch(IOException e) { 
 			System.out.println("IOException occured while adding event in file!");
+			e.getMessage();
 			e.printStackTrace();
 		}
 		
 		catch(JSONException e) { 
 			System.out.println("JSON exception occured while adding event in file!");
+			e.getMessage();
+		}
+		
+		finally { 
+			if(writer != null) { 
+				writer.close();
+			}
 		}
 		
 		return true; 

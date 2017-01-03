@@ -28,7 +28,7 @@ public class EventEditor {
 		this.file = file;
 	}
 
-	public void addEvent() throws IOException, JSONException { //ADDS NEW EVENT IN EVENT FILE
+	public void addEvent() throws IOException, JSONException, InvalidInputException { //ADDS NEW EVENT IN EVENT FILE
 		
 		String type = null; 
 		String marker = null; 
@@ -36,14 +36,43 @@ public class EventEditor {
 		String time = null;
 		String description = null; 
 		Event event = null;
-				
-		type = scan.inputType();
 		
-		marker = scan.inputMarker();
+		while(type == null) { 
+			try {
+				type = scan.inputType();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}
 		
-		date = scan.inputDate();
-				
-		time =  scan.inputTime();
+		while(marker == null) { 
+			try {
+				marker = scan.inputMarker();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}
+		
+		
+		while(date == null) { 
+			try {
+				date = scan.inputDate();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}	
+		
+		while(time == null) { 
+			try {
+				time = scan.inputTime();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}		
 		
 		description = scan.inputDescription(); 
 		
@@ -70,7 +99,10 @@ public class EventEditor {
 				
 	}
 	
-	public void printEventList() throws JSONException, InvalidInputException {  //PRINTS ALL EVENTS FROM EVENT FILE
+	public void printEventList() throws JSONException, InvalidInputException, IOException {  //PRINTS ALL EVENTS FROM EVENT FILE
+		
+		BufferedReader reader = null; 
+		String line = null; 
 		
 		try { 
 			
@@ -79,8 +111,7 @@ public class EventEditor {
 				return; 
 			}
 			
-			BufferedReader reader = new BufferedReader(new FileReader(this.file)); 
-			String line = ""; 
+			reader = new BufferedReader(new FileReader(this.file)); 
 						
 			while( (line = reader.readLine()) != null ) { 
 				
@@ -97,16 +128,24 @@ public class EventEditor {
 				}
 				catch(JSONException e) { 
 					System.out.println("JSON exception occured while printing event list!");
+					e.getMessage();
 					continue;
 				}
 			}
 						
-			reader.close();
-						
 		}
 		catch(IOException e) {
 			System.out.println("IOException occured while printing event list!");
+			e.getMessage();
 			return;
+		}
+		
+		finally { 
+
+			if(reader != null) {
+				reader.close();
+			}
+			
 		}
 
 	}
@@ -119,12 +158,13 @@ public class EventEditor {
 		}
 		
 		ArrayList<Event> eventList = new ArrayList<Event>();
-		
 		String date = scan.inputDate(); 
+		BufferedReader reader = null; 
+		String line = null; 
 		
 		try { 
-			BufferedReader reader = new BufferedReader(new FileReader(this.file)); 
-			String line = null; 
+			reader = new BufferedReader(new FileReader(this.file)); 
+
 			StringBuffer eventsForDay = new StringBuffer(); 
 			
 			while( (line = reader.readLine()) != null ) { 
@@ -147,12 +187,18 @@ public class EventEditor {
 				}
 				catch(JSONException e) { 
 					System.out.println("JSON exception occured while printing event list!");
+					e.getMessage();
 					continue;
 				}
+				
+				finally { 
+					if(reader != null) { 
+						reader.close();
+					}
+				}
+				
 			}
-			
-			reader.close();
-			
+						
 			if(eventList.size() == 0) { 
 				System.out.println("Events on " + date + ": no events\n");
 				return; 
@@ -171,27 +217,38 @@ public class EventEditor {
 		}
 		catch(IOException e) {
 			System.out.println("IOException occured while printing event for " + date);
+			e.getMessage();
 			return;
 		}	
 	}
 	
-	public void printEventForAMonth() throws InvalidInputException { 
+	public void printEventForAMonth() throws InvalidInputException, IOException { 
 		
 		if(this.file.length() == 0) { 
 			System.out.println("No events yet!\n");
 			return; 
 		}
 		
-		String month = scan.inputMonth();
+		String month = null;
+		BufferedReader reader = null; 
+		String line = null; 
+		ArrayList<Event> eventList = new ArrayList<Event>();
+		ArrayList<String> dateList = new ArrayList<String>();
+		int meetings = 0; 
+		int tasks = 0;
+		
+		while(month == null) { 
+			
+			try { 
+				month = this.scan.inputMonth(); 
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}		
+		}
 				
 		try { 
-			BufferedReader reader = new BufferedReader(new FileReader(this.file)); 
-			String line = null; 
-			ArrayList<Event> eventList = new ArrayList<Event>();
-			ArrayList<String> dateList = new ArrayList<String>();
-			
-			int meetings = 0; 
-			int tasks = 0;
+			reader = new BufferedReader(new FileReader(this.file)); 
 			
 			while( (line = reader.readLine()) != null ) { 
 				
@@ -215,58 +272,63 @@ public class EventEditor {
 				}
 			}
 			
-			reader.close();
-			
-			if(eventList.size() == 0) { 
-				System.out.println("Events during month " + month + ": no events\n");
-				return; 
-			}
-			
-			Collections.sort(eventList, new DateComparator());
-			
-			System.out.println("Events for " + month + " month: ");
-			
-			for (Event e : eventList) { 	//FILLS THE LIST WITH ALL DATES FOR THE CURRENT MONTH
-				if(!dateList.contains(e.getDayOfMonth())) { 
-					dateList.add(e.getDayOfMonth());
-				}
-			}
-			
-			for(String date : dateList) {  //COUNTS EVENTS AND MEETING FOR EVERY DATE IN THE LIST
-				
-				for(Event e : eventList) {
-				
-					if(e.getDayOfMonth().equals(date)) { 
-					
-						if(e.getType().equalsIgnoreCase("meeting")) { 
-							meetings++;
-						}
-					
-						if(e.getType().equalsIgnoreCase("task")) { 
-							tasks++;
-						}
-					}
-			}
-				System.out.println(" -" + date + ": " + meetings + " meeting(s), " + tasks + " task(s)");
-				meetings = 0; 
-				tasks = 0;
 		}
-			
-			System.out.println("\n");
-			dateList = null; 
-			eventList = null; 
 		
-			
-		}
-			
 		catch(IOException e ) { 
 			System.out.println("IOException occured while printing event for  " + month + "(month)");
 			return; 
 		}
 		
+		finally { 
+			if(reader != null) { 
+				reader.close();
+			}
+		}
+			
+		if(eventList.size() == 0) { 
+			System.out.println("Events during month " + month + ": no events\n");
+			return; 
+			}
+			
+		Collections.sort(eventList, new DateComparator());
+			
+		System.out.println("Events for " + month + " month: ");
+			
+		for (Event e : eventList) { 	//FILLS THE LIST WITH ALL DATES FOR THE CURRENT MONTH
+			if(!dateList.contains(e.getDayOfMonth())) { 
+				dateList.add(e.getDayOfMonth());
+			}
+		}
+			
+		for(String date : dateList) {  //COUNTS EVENTS AND MEETING FOR EVERY DATE IN THE LIST
+				
+			for(Event e : eventList) {
+				
+				if(e.getDayOfMonth().equals(date)) { 
+					
+					if(e.getType().equalsIgnoreCase("meeting")) { 
+						meetings++;
+					}
+					
+					if(e.getType().equalsIgnoreCase("task")) { 
+						tasks++;
+					}
+				}
+		}
+			
+			System.out.println(" -" + date + ": " + meetings + " meeting(s), " + tasks + " task(s)");
+			meetings = 0; 
+			tasks = 0;
+		}
+			
+		System.out.println("\n");
+		dateList = null; 
+		eventList = null; 
+		
+				
 	}
 	
-	public boolean deleteEvent() throws JSONException, InvalidInputException {
+	public boolean deleteEvent() throws JSONException, InvalidInputException, IOException {
 		
 		if(this.file.length() == 0) { 
 			System.out.println("No events yet!\n");
@@ -285,13 +347,15 @@ public class EventEditor {
 			
 		String toDeleteDate = toDelete.get("date").toString();
 		String toDeleteTime = toDelete.get("time").toString();
+		BufferedReader reader = null;
+		ArrayList<Event> eventList = new ArrayList<Event>(); 
+		String line = null;
+		boolean match = false;
+		
 		
 		try {
 			
-			BufferedReader reader = new BufferedReader(new FileReader(this.file));
-			ArrayList<Event> eventList = new ArrayList<Event>(); 
-			String line;
-			boolean match = false;
+			reader = new BufferedReader(new FileReader(this.file));
 			
 			while( (line = reader.readLine()) != null) { 
 				
@@ -309,13 +373,26 @@ public class EventEditor {
 				}
 				catch(JSONException e) { 
 					System.out.println("JSONException occured while deleting event!");
+					e.getMessage();
 					continue; 
 				}
 				
 			}
-						
-			reader.close(); 
 			
+		}
+		
+		catch(IOException e ){
+			System.out.println("IOException occured while deleting event!");
+			e.getMessage();
+			return false;
+		}
+		
+		finally { 
+			if(reader != null) { 
+				reader.close();
+			}
+		}
+									
 			emptyEventFile();
 			
 			if(eventList.size() == 0) {  //IF THE LAST EVENT IN THE FILE IS BEING DELETED
@@ -336,12 +413,7 @@ public class EventEditor {
 			System.out.println("Event deleted successfully!\n");
 			return true; 
 
-		}
-		
-		catch(IOException e ){
-			System.out.println("IOException occured while deleting event!"); 
-			return false;
-		}
+
 			
 	}
 
@@ -378,12 +450,13 @@ public class EventEditor {
 			return event; 
 		}
 		catch(JSONException e) { 
-			System.out.println("JSON exception occured while creating event!"); 
+			System.out.println("JSON exception occured while creating event!");
+			e.getMessage();
 			return null;
 		}
 		catch(InvalidInputException e) { 
-			e.getMessege();
 			System.out.println("Couldn't read event from file!");
+			e.getMessage();
 			return null;
 		}
 	}
@@ -391,7 +464,7 @@ public class EventEditor {
 	public File openEventFile() throws IOException {  // CREATES OR OPENS AN EVENT TXT FILE
 		
 		try {
-			File file = new File("C:\\Users\\Kristiyan\\Desktop\\events.txt"); 
+			File file = new File("D:\\III semestur\\PIK III\\Organizer\\events.txt"); 
 			boolean isCreated = file.createNewFile();
 			
 			if(isCreated) { 
@@ -410,20 +483,39 @@ public class EventEditor {
 		}
 	}
 	
-	public JSONObject searchEvent() {  //SEARCHES AN EVENT BY DATE AND TIME
+	public JSONObject searchEvent() throws IOException, InvalidInputException {  //SEARCHES AN EVENT BY DATE AND TIME
 			
-	if(this.file.length() == 0) { 
-		System.out.println("No events yet!\n");
-		return null; 
-	}
-	
-	String date = scan.inputDate();
-	String time = scan.inputTime();
+		if(this.file.length() == 0) { 
+			System.out.println("No events yet!\n");
+			return null; 
+		}
+		
+		String date = null; 
+		String time = null;
+		BufferedReader reader = null; 
+		String line = null; 
+		
+		while(date == null) { 
+			try {
+				date = scan.inputDate();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}	
+		
+		while(time == null) { 
+			try {
+				time = scan.inputTime();
+			}
+			catch(InvalidInputException e) { 
+				e.getMessege();
+			}
+		}
 				
 		try { 
 			
-			BufferedReader reader = new BufferedReader(new FileReader(this.file)); 
-			String line = ""; 
+			reader = new BufferedReader(new FileReader(this.file)); 
 						
 			while( (line = reader.readLine()) != null ) { 
 				
@@ -444,15 +536,22 @@ public class EventEditor {
 				}
 				catch(JSONException e) { 
 					System.out.println("JSON exception occured while searching for event!");
+					e.getMessage();
 					continue;
 				}
 			}
-			reader.close();
 		}
 		
 		catch(IOException e) { 
 			System.out.println("IOException occured while searching for event!");
+			e.getMessage();
 			return null;
+		}
+		
+		finally { 
+			if(reader != null) { 
+				reader.close();
+			}
 		}
 			
 		System.out.println("No event found on " + date + " at " + time);
@@ -461,14 +560,22 @@ public class EventEditor {
 		
 	public boolean emptyEventFile() throws IOException { // EMPTIES THE EVENT FILE
 		
+		BufferedWriter writer = null;
+
+		
 		try { 
-			BufferedWriter writer = new BufferedWriter(new FileWriter(this.getFile()));
+			writer = new BufferedWriter(new FileWriter(this.getFile()));
 			writer.write("");
-			writer.close();
 		}
 		catch(IOException e) { 
 			System.out.println("IOException occured while emptying event file!"); 
+			e.getMessage();
 			return false; 
+		}	
+		finally { 
+			if(writer != null) { 
+				writer.close();
+			}
 		}
 		
 		return true; 
